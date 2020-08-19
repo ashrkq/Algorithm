@@ -1,6 +1,8 @@
 # Prerequisites
+.DS_Store
 *.d
-
+.vscode
+compiler
 # Compiled Object files
 *.slo
 *.lo
