@@ -8,5 +8,5 @@ if __name__ == "__main__":
             summ += c
             x = d.get(summ,0)
             d[summ] = x + 1
-            ans += x
+            ans += x·
         print(ans)

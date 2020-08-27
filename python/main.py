@@ -1,12 +1,18 @@
-# 思想类似c++ 代码进行了精简
-if __name__ == "__main__":
-    for data in [*open(0)][2::2]:
-        d = {0:1}
-        summ = ans = 0
-        for a in data[0:-1]:
-            c = int(a) - 1
-            summ += c
-            x = d.get(summ,0)
-            d[summ] = x + 1
-            ans += x
-        print(ans)
+class Solution:
+    def stoneGameV(self, stoneValue: List[int]) -> int:
+        ans = 0
+        stoneValue.sort()
+        while len(stoneValue) > 1:
+            for i,value in enumerate(stoneValue):
+                sum1 = stoneValue[:i+1]
+                sum2 = stoneValue[i+1:]
+                if sum1 >= sum2:
+                    sum1 -= value
+                    sum2 += value
+                    ans += sum1
+                    stoneValue = stoneValue[:i]
+                    break
+        return ans
+
+
+
