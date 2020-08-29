@@ -21,6 +21,11 @@ public:
             int mid = 1;
             for(int i=1;i+ln-1 <= n;i++){ 
                 int k = i+ln-1;
+                // 对区间dp进行优化
+                // 每次大于的和小于的都要被一个点分割
+                // 分别求出左右两边的最值 然后选取最值就可以了
+                // maxxl[i][j]表示似选取mid左边的mid到i
+                // maxxr[i][j] 表示选取mid右边到mid到j
                 while(summ[mid]-summ[i-1] < summ[k]-summ[mid]) mid++;
                 if(mid>i) dp[i][k] = max(dp[i][k], maxxl[i][mid-1]);
                 if(mid<=k) dp[i][k] = max(dp[i][k], maxxr[mid][k]);
