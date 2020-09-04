@@ -1,3 +1,4 @@
+# 第一次使用python写DFS
 class Solution:
     xt = [1,-1,0,0]
     yt = [0,0,1,-1]
