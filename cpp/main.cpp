@@ -4,7 +4,7 @@ using namespace std;
 #define LL long long
 LL tree[4 * INF];
 LL lazy[4 * INF];
-
+// 线段树区间更新，用来lazy标记来标记区间的子是否需要更新 更新需要的值是多少
 void build(int l, int r, int node)
 {
     if (l == r)
@@ -18,11 +18,12 @@ void build(int l, int r, int node)
     tree[node] = tree[(node << 1) + 1] + tree[(node << 1) + 2];
 }
 
-void check_node(int node, int l, int r)
+void check_node(int node, int l, int r, int mid)
 {
     if (lazy[node])
     {
-        tree[node] = lazy[node] * (r - l + 1);
+        tree[(node << 1) + 1] = lazy[node] * (mid - l + 1);
+        tree[(node << 1) + 2] = lazy[node] * (r - mid);
         lazy[(node << 1) + 1] = lazy[node];
         lazy[(node << 1) + 2] = lazy[node];
         lazy[node] = 0;
@@ -31,34 +32,30 @@ void check_node(int node, int l, int r)
 
 LL query(int l, int r, int node, int ql, int qr)
 {
-    if (ql <= l && r <= qr)
-    {
-        if (l == r)
-            lazy[node] = 0;
-        return tree[node];
-    }
+    if (ql <= l && r <= qr) return tree[node];
+    int summ = 0;
     int mid = (l + r) >> 1;
-    check_node(node, l, r);
+    check_node(node, l, r, mid);
     if (qr <= mid)
-        return query(l, mid, (node << 1) + 1, ql, qr);
-    if (mid < ql)
-        return query(mid + 1, r, (node << 1) + 2, ql, qr);
-    return query(l, mid, (node << 1) + 1, ql, mid) + query(mid + 1, r, (node << 1) + 2, mid + 1, qr);
+        summ = query(l, mid, (node << 1) + 1, ql, qr);
+    else if (mid < ql)
+        summ = query(mid + 1, r, (node << 1) + 2, ql, qr);
+    else
+        summ =  query(l, mid, (node << 1) + 1, ql, mid) + query(mid + 1, r, (node << 1) + 2, mid + 1, qr);
+    return summ;
 }
 
 void update(int l, int r, int node, int ql, int qr, LL value)
 {
     if (ql <= l && r <= qr)
     {
+
         lazy[node] = value;
-        if (l == r)
-            lazy[node] = 0,tree[node] = value;
-        else
-            check_node(node, l, r);
+        tree[node] = value * (r - l + 1);
         return;
     }
     int mid = (l + r) >> 1;
-    check_node(node, l, r);
+    check_node(node, l, r, mid);
     if (qr <= mid)
         update(l, mid, (node << 1) + 1, ql, qr, value);
     else if (ql > mid)
@@ -67,7 +64,7 @@ void update(int l, int r, int node, int ql, int qr, LL value)
         update(l, mid, (node << 1) + 1, ql, mid, value);
         update(mid + 1, r, (node << 1) + 2, mid + 1, qr, value);
     }
-    // tree[node] = tree[(node << 1) + 1] + tree[(node << 1) + 2];
+    tree[node] = tree[(node << 1) + 1] + tree[(node << 1) + 2];
 }
 
 int main()
