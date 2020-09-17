@@ -1,96 +1,73 @@
-#include <bits/stdc++.h>
+#include<bits/stdc++.h>
 using namespace std;
-#define INF 1000010
-#define LL long long
-LL tree[4 * INF];
-LL lazy[4 * INF];
-// 线段树区间更新，用来lazy标记来标记区间的子是否需要更新 更新需要的值是多少
-void build(int l, int r, int node)
-{
-    if (l == r)
-    {
-        scanf("%lld", &tree[node]);
-        return;
+#define INF 100010
+vector<pair<int, int>> paper;
+vector<int> colors;
+vector<int> ln;
+map<int, int> idx;
+int num;
+int tree[INF * 4];
+int lazy[INF * 4];
+bool vis[INF];
+// 线段树的区间覆盖问题，离散化计算数据使用
+// 区间覆盖，问题每次更新区间然后最后查询区间中的颜色有几种
+// 使用左封右开的区间查询。区间颜色l-r就是l-r来标记标记的使用的第几个区间
+void build(int l, int r, int node){
+    if(l == r-1){
+        tree[node] = -1; return ;
     }
-    int mid = (l + r) >> 1;
-    build(l, mid, (node << 1) + 1);
-    build(mid + 1, r, (node << 1) + 2);
-    tree[node] = tree[(node << 1) + 1] + tree[(node << 1) + 2];
+    int mid = (l + r ) >> 1;
+    build(l, mid, node<<1);
+    build(mid, r, node<<1|1);
 }
 
-void check_node(int node, int l, int r, int mid)
-{
-    if (lazy[node])
-    {
-        tree[(node << 1) + 1] = lazy[node] * (mid - l + 1);
-        tree[(node << 1) + 2] = lazy[node] * (r - mid);
-        lazy[(node << 1) + 1] = lazy[node];
-        lazy[(node << 1) + 2] = lazy[node];
+void push_down(int mid, int node, int l, int r){
+    if(lazy[node]){
+        lazy[node << 1] = lazy[node << 1|1] = lazy[node];
+        tree[node << 1] = tree[node << 1|1] = lazy[node];
         lazy[node] = 0;
     }
 }
 
-LL query(int l, int r, int node, int ql, int qr)
-{
-    if (ql <= l && r <= qr) return tree[node];
-    int summ = 0;
-    int mid = (l + r) >> 1;
-    check_node(node, l, r, mid);
-    if (qr <= mid)
-        summ = query(l, mid, (node << 1) + 1, ql, qr);
-    else if (mid < ql)
-        summ = query(mid + 1, r, (node << 1) + 2, ql, qr);
-    else
-        summ =  query(l, mid, (node << 1) + 1, ql, mid) + query(mid + 1, r, (node << 1) + 2, mid + 1, qr);
-    return summ;
-}
-
-void update(int l, int r, int node, int ql, int qr, LL value)
-{
-    if (ql <= l && r <= qr)
-    {
-
+void update(int l, int r, int node, int ql, int qr, int value){
+    if(ql <= l && r <= qr){
+        tree[node] = value;
         lazy[node] = value;
-        tree[node] = value * (r - l + 1);
         return;
     }
     int mid = (l + r) >> 1;
-    check_node(node, l, r, mid);
-    if (qr <= mid)
-        update(l, mid, (node << 1) + 1, ql, qr, value);
-    else if (ql > mid)
-        update(mid + 1, r, (node << 1) + 2, ql, qr, value);
-    else{
-        update(l, mid, (node << 1) + 1, ql, mid, value);
-        update(mid + 1, r, (node << 1) + 2, mid + 1, qr, value);
-    }
-    tree[node] = tree[(node << 1) + 1] + tree[(node << 1) + 2];
+    push_down(mid, node, l, r);  
+    if( ql < mid) update(l, mid, node<<1, ql, qr, value);
+    if(qr > mid) update(mid, r, node<<1|1, ql, qr, value);
 }
 
-int main()
-{
-    int n;
-    scanf("%d", &n);
-    build(0, n - 1, 0);
-    int m;
-    scanf("%d", &m);
-    while (m--)
-    {
-        int q;
-        scanf("%d", &q);
-        if (q)
-        {
-            int l, r;
-            LL v;
-            scanf("%d %d %lld", &l, &r, &v);
-            update(0, n - 1, 0, l - 1, r - 1, v);
+void query(int l, int r, int node){
+    if(l == r - 1){
+        if(tree[node] != -1 && !vis[tree[node]]){
+            vis[tree[node]] = true;  colors.push_back(tree[node]);
         }
-        else
-        {
-            int l, r;
-            scanf("%d %d", &l, &r);
-            printf("%lld\n", query(0, n - 1, 0, l - 1, r - 1));
-        }
+        return;
     }
+    int mid = (l + r) >> 1;
+    push_down(mid, node, l, r);
+    query(l, mid, node << 1);
+    query(mid, r, (node << 1) + 1);
+}
+int main(){
+    int n,l; scanf("%d %d", &n, &l);
+    for(int i=0;i<n;++i){
+        int a, b; scanf("%d %d", &a, &b);
+        paper.push_back({a,b});
+        ln.push_back(a); ln.push_back(b);
+    }
+    sort(ln.begin(), ln.end());
+    for(int a : ln) if(!idx[a]) idx[a] = ++num;
+    if(idx[l]) idx[l+1] = ++num;
+    else idx[l] = ++num;
+    build(1, num, 1);
+    int m = 1;
+    for(auto id:paper) update(1, num, 1, idx[id.first], idx[id.second], m++);
+    query(1, num, 1);
+    printf("%lu\n",colors.size());
     return 0;
 }
