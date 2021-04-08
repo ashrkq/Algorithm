@@ -8,7 +8,8 @@ compiler
 *.lo
 *.o
 *.obj
-
+main
+venv
 # Precompiled Headers
 *.gch
 *.pch
